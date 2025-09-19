@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园智慧信息网络中心问答助手</title>
+    <style>
+        /* 全局样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-image: url('image.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        
+        /* 背景遮罩 */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.85);
+            z-index: -1;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* 标题样式 */
+        h1 {
+            color: #4CAF50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        /* 聊天窗口 */
+        .chat-window {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        
+        /* 消息样式 */
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+        
+        .message.user {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            margin-left: auto;
+        }
+        
+        .message.assistant {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        /* 动态卡片 */
+        .dynamic-card {
+            margin-top: 10px;
+            border: 2px dashed #a7f3d0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .card-header {
+            padding: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #f1f8e9;
+        }
+        
+        .card-content {
+            padding: 15px;
+            display: none;
+        }
+        
+        .card-content.active {
+            display: block;
+        }
+        
+        /* 输入区域 */
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .input-area button {
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .input-area button:hover {
+            background-color: #45a049;
+        }
+        
+        /* 服务信息 */
+        .service-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    
+    <div class="container">
+        <h1>校园智慧信息网络中心问答助手</h1>
+        
+        <div class="chat-window" id="chat-window">
+            <!-- 欢迎消息 -->
+            <div class="message assistant">
+                您好！我是信息网络中心的智能助手。请问有什么可以帮助您的吗？
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="请输入您的问题..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">发送</button>
+        </div>
+        
+        <div class="service-info">
+            <p>服务时间：工作日 8:00-12:00, 14:30-17:30</p>
+            <p>服务热线：85280099</p>
+        </div>
+    </div>
+    
+    <script>
+        // 常见问题回答
+        const faqAnswers = {
+            '忘记校园网密码怎么办？': '您可以通过学校自助服务平台重置密码，步骤：1. 访问自助服务平台；2. 点击"密码重置"；3. 通过绑定的手机号验证；4. 设置新密码。',
+            '宿舍网络无法连接？': '请先检查网线接口是否松动，重启路由器（断电30秒），查看认证客户端状态。如果仍无效，请拨打网络中心热线85280099转2。',
+            '新生如何开通校园网？': '新生校园网基础套餐已自动开通，需用学号登录信息门户，初始密码为身份证后六位（含大写字母）。',
+            '教室多媒体故障如何处理？': '紧急报修方式：1. 扫描讲台右上角二维码；2. 或拨打85280099转1（工作时间：7:45-20:30）。',
+            '如何申请固定IP？': ''
+        };
+        
+        // 动态卡片数据
+        const cardData = {
+            '如何申请固定IP？': `
+                <h4>🏢 固定IP申请流程</h4>
+                <ol>
+                    <li>登录校园网络服务平台</li>
+                    <li>在「服务申请」中选择「固定IP绑定」</li>
+                    <li>上传设备MAC地址</li>
+                    <li>等待24小时审核</li>
+                </ol>
+            `
+        };
+        
+        // 发送消息
+        function sendMessage() {
+            const userInput = document.getElementById('user-input');
+            const chatWindow = document.getElementById('chat-window');
+            const question = userInput.value.trim();
+            
+            if (!question) return;
+            
+            // 添加用户消息
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.textContent = question;
+            chatWindow.appendChild(userMessage);
+            
+            // 清空输入框
+            userInput.value = '';
+            
+            // 添加助手回复
+            setTimeout(() => {
+                const assistantMessage = document.createElement('div');
+                assistantMessage.className = 'message assistant';
+                
+                // 检查是否有预设回答
+                if (faqAnswers[question]) {
+                    assistantMessage.textContent = faqAnswers[question];
+                } else if (cardData[question]) {
+                    // 创建动态卡片
+                    const card = document.createElement('div');
+                    card.className = 'dynamic-card';
+                    card.innerHTML = `
+                        <div class="card-header">点击展开详情</div>
+                        <div class="card-content">${cardData[question]}</div>
+                    `;
+                    
+                    // 添加点击事件
+                    card.querySelector('.card-header').addEventListener('click', function() {
+                        this.nextElementSibling.classList.toggle('active');
+                    });
+                    
+                    assistantMessage.appendChild(card);
+                } else {
+                    assistantMessage.textContent = '感谢您的咨询！关于您的问题，建议您拨打信息网络中心服务热线：85280099获取帮助。';
+                }
+                
+                chatWindow.appendChild(assistantMessage);
+                
+                // 滚动到底部
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }, 500);
+            
+            // 滚动到底部
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+    </script>
+</body>
+</html>
